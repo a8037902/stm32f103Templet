@@ -40,9 +40,9 @@
                                        /* ... MUST NEVER be higher than 254!                           */
 									   //用户可用的优先级范围为0 ~ OS_LOWEST_PRIO-2
 
-#define OS_MAX_EVENTS            10u   //应用中最多事件控制块的数目 必须大于0   ,每增多1个,增多8个字节(>=消息邮箱+消息队列+信号量)                                                                      
+#define OS_MAX_EVENTS             5u   //应用中最多事件控制块的数目 必须大于0   ,每增多1个,增多8个字节(>=消息邮箱+消息队列+信号量)                                                                      
 #define OS_MAX_FLAGS              5u   //应用中最多事件标志组的数目	必须大于 0	,每增多1个,增多8个字节						  
-#define OS_MAX_MEM_PART           1u   //最多内存块的数目           MUST be > 0 							 
+#define OS_MAX_MEM_PART           5u   //最多内存块的数目           MUST be > 0 							 
 #define OS_MAX_QS                 5u   //应用中最多队列控制块的数目	MUST be > 0	,每增多一个,增多24个字节(要使用队列,最少为2)				   
 #define OS_MAX_TASKS             10u   //应用中最多任务数目		    OS_MAX_TASKS<=62 					  
  	   
@@ -50,7 +50,7 @@
 #define OS_SCHED_LOCK_EN          1u   /* Include code for OSSchedLock() and OSSchedUnlock()           */
 
 #define OS_TICK_STEP_EN           1u   /* Enable tick stepping feature for uC/OS-View                  */
-#define OS_TICKS_PER_SEC       1000u   /* Set the number of ticks in one second                        */
+#define OS_TICKS_PER_SEC        1000u   /* Set the number of ticks in one second                        */
 
 
                                        /* --------------------- TASK STACK SIZE ---------------------- */
@@ -101,7 +101,7 @@
 
 
                                        /* ---------------- MUTUAL EXCLUSION SEMAPHORES --------------- */
-#define OS_MUTEX_EN               0u   /* Enable (1) or Disable (0) code generation for MUTEX          */
+#define OS_MUTEX_EN               1u   /* Enable (1) or Disable (0) code generation for MUTEX          */
 #define OS_MUTEX_ACCEPT_EN        1u   /*     Include code for OSMutexAccept()                         */
 #define OS_MUTEX_DEL_EN           1u   /*     Include code for OSMutexDel()                            */
 #define OS_MUTEX_QUERY_EN         1u   /*     Include code for OSMutexQuery()                          */

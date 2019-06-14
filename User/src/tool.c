@@ -1,10 +1,10 @@
 #include "tool.h"
 
-u32 get_bitFor(u32 data, u8 index) {
-	return (data >> index) & 1;
+u32 Tool_GetBitFor(u32 data, u8 index) {
+	return (data >> index) & 0x00000001;
 }
 
-u32 set_bitFor(u32 data, u8 index, BOOL d) {
+u32 Tool_SetBitFor(u32 data, u8 index, BOOL d) {
 	if (d) {
 		data |= 1 << index;
 	} else {
@@ -21,7 +21,7 @@ u32 set_bitFor(u32 data, u8 index, BOOL d) {
 // return value: 
 // remarks : 将字符串转化为16进制数
 */
-void StrToHex(u8 *pbDest, u8 *pbSrc, int nLen)
+void Tool_StrToHex(u8 *pbDest, u8 *pbSrc, int nLen)
 {
 	char h1,h2;
 	u8 s1,s2;
@@ -52,7 +52,7 @@ void StrToHex(u8 *pbDest, u8 *pbSrc, int nLen)
 // return value: 
 // remarks : 将16进制数转化为字符串
 */
-void HexToStr(u8 *pbDest, u8 *pbSrc, int nLen)
+void Tool_HexToStr(u8 *pbDest, u8 *pbSrc, int nLen)
 {
 	char	ddl,ddh;
 	int i;
@@ -71,7 +71,7 @@ void HexToStr(u8 *pbDest, u8 *pbSrc, int nLen)
 }
 
 
-void bubble_Sort(u16 L[],u16 n) { 
+void Tool_BubbleSort(u16 L[],u16 n) { 
 	int i,j;  
 	u16 temp;
 	BOOL ischanged;//设计跳出条件 
@@ -88,6 +88,28 @@ void bubble_Sort(u16 L[],u16 n) {
 		if(!ischanged)//若没有移动则说明序列已经有序，直接跳出  
 		break;  
 	} 
+}
+
+
+u16 Tool_GetByteIndex(u8 *pBuf, u16 start, u16 len, u8 byte){
+	u16 index=start;
+	while(index<len){
+		if(pBuf[index]==byte){
+			break;
+		}
+		index++;
+	}
+	
+	return index;
+}
+
+u32 Tool_LoopSub(u32 last, u32 next)
+{
+	if(next>=last){
+		return next-last;
+	}
+	
+	return 0xFFFFFFFF-last+next+1;
 }
 
 

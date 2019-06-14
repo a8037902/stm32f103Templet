@@ -28,11 +28,11 @@ void GUI_TOUCH_X_ActivateY(void) {
 }
 
 int  GUI_TOUCH_X_MeasureX(void) {
-  return ADS_Read_XY(CMD_RDX);
+  return TP_Read_AD(CMD_RDX);
 }
 
 int  GUI_TOUCH_X_MeasureY(void) {
-  return ADS_Read_XY(CMD_RDY);
+  return TP_Read_AD(CMD_RDY);
 }
 
 

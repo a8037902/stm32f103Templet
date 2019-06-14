@@ -68,7 +68,7 @@ typedef struct
 
 //void at_init(void);
 void at_printf(const char * s);
-void at_recvTask(void);
+void at_recvTask(u8 *recvBuf,u16 recvLen);
 void at_cmdProcess(uint8_t *pAtRcvData);
 
 #define at_backOk        at_printf("\r\nOK\r\n")

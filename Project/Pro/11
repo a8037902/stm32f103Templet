@@ -1,0 +1,5 @@
+AT+CGATT=1
+AT+CGDCONT=1,"IP","CMNET"
+AT+CGACT=1,1
+AT+CIPSTART="TCP","dtuchina.yuwey.com",10000
+

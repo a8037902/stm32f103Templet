@@ -34,7 +34,7 @@ int fputc(int ch, FILE *f)
 }
 #endif
 
-#define DATA_BUF_SIZE	USART_BUF_SIZE
+//#define DATA_BUF_SIZE	USART_BUF_SIZE
 
 typedef struct usart_struct {
     
@@ -42,16 +42,20 @@ typedef struct usart_struct {
 	u8 *pRecBufE;
 	u8 *pSendBufH;
 	u8 *pSendBufE;
-	u8 receiveBuf[DATA_BUF_SIZE];
-	u8 sendBuf[DATA_BUF_SIZE];
-	
+//	u8 receiveBuf[DATA_BUF_SIZE];
+//	u8 sendBuf[DATA_BUF_SIZE];
+	u8 *pReceiveBuf;
+	u8 *pSendBuf;
+	u16 len;
 } sutUSART;
+
+USART_TypeDef * USARTS[5]={USART1,USART2,USART3,UART4,UART5};
 
 //static sutUSART g_Usart1;
 
 //static sutUSART g_Usart2;
 
-static sutUSART g_Usarts[3];
+static sutUSART g_Usarts[5];
 
 
 void usart_Init(USART_TypeDef *usart, GPIO_TypeDef * gpio, uint16_t tx, uint16_t rx, IRQn_Type irq, u32 bound)
@@ -110,7 +114,7 @@ u16 usart_SetData(u8 *pData, u16 size, sutUSART *p)
 		*pH = *pData;
 		pH++;
 		pData++;
-		if(pH - p->sendBuf >= DATA_BUF_SIZE)pH = p->sendBuf;
+		if(pH - p->pSendBuf >= p->len)pH = p->pSendBuf;
 		if(pH == pE)break;
 	}
 	
@@ -151,7 +155,7 @@ u16 usart_GetData(u8 *pData, u16 size, sutUSART *p)
 	}
 	else if(pH < pE)
 	{
-		len = DATA_BUF_SIZE-(p->pRecBufE - p->pRecBufH);
+		len = p->len-(p->pRecBufE - p->pRecBufH);
 		if(len>size && size != 0)len = size;
 		
 		i = len;
@@ -160,9 +164,9 @@ u16 usart_GetData(u8 *pData, u16 size, sutUSART *p)
 			*pData = *pE;
 			++pData;
 			++pE;
-			if((pE-p->receiveBuf) >= DATA_BUF_SIZE)				
+			if((pE-p->pReceiveBuf) >= p->len)				
 			{
-				pE = p->receiveBuf;
+				pE = p->pReceiveBuf;
 			}
 		}
 		p->pRecBufE = pE;
@@ -178,14 +182,21 @@ u16 usart_GetData(u8 *pData, u16 size, sutUSART *p)
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-void Usart_Init(int usart, u32 bound){
-	g_Usarts[usart].pRecBufH = g_Usarts[usart].receiveBuf;
-	g_Usarts[usart].pRecBufE = g_Usarts[usart].receiveBuf;
-	g_Usarts[usart].pSendBufH = g_Usarts[usart].sendBuf;
-	g_Usarts[usart].pSendBufE = g_Usarts[usart].sendBuf;
+void Usart_Init(int usart, u32 bound, u8 *pReceiveBuf, u8 *pSendBuf, u16 len){
+	g_Usarts[usart].pReceiveBuf=pReceiveBuf;
+	g_Usarts[usart].pSendBuf=pSendBuf;
+	g_Usarts[usart].len=len;
+	g_Usarts[usart].pRecBufH = g_Usarts[usart].pReceiveBuf;
+	g_Usarts[usart].pRecBufE = g_Usarts[usart].pReceiveBuf;
+	g_Usarts[usart].pSendBufH = g_Usarts[usart].pSendBuf;
+	g_Usarts[usart].pSendBufE = g_Usarts[usart].pSendBuf;
 	if(usart==0){
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1|RCC_APB2Periph_GPIOA|RCC_APB2Periph_AFIO, ENABLE);	//使能USART1，GPIOA时钟以及复用功能时钟
 		usart_Init(USART1,GPIOA,GPIO_Pin_9,GPIO_Pin_10,USART1_IRQn,bound); 
+		
+		//RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1|RCC_APB2Periph_GPIOB|RCC_APB2Periph_AFIO, ENABLE);	//使能USART1，GPIOA时钟以及复用功能时钟
+		//GPIO_PinRemapConfig(GPIO_Remap_USART1,ENABLE);
+		//usart_Init(USART1,GPIOB,GPIO_Pin_6,GPIO_Pin_7,USART1_IRQn,bound); 
 	}else if(usart==1){
 		RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);	//使能USART1，GPIOA时钟以及复用功能时钟
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_AFIO, ENABLE);
@@ -194,15 +205,23 @@ void Usart_Init(int usart, u32 bound){
 		RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);	//使能USART1，GPIOA时钟以及复用功能时钟
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB|RCC_APB2Periph_AFIO, ENABLE);
 		usart_Init(USART3,GPIOB,GPIO_Pin_10,GPIO_Pin_11,USART3_IRQn,bound); 
+		
+//		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD|RCC_APB2Periph_AFIO, ENABLE);
+//		GPIO_PinRemapConfig(GPIO_FullRemap_USART3,ENABLE);
+//		usart_Init(USART3,GPIOD,GPIO_Pin_8,GPIO_Pin_9,USART3_IRQn,bound); 
 	}
 	
 }
 
-void Usart_BufInit(int usart){
-	g_Usarts[usart].pRecBufH = g_Usarts[usart].receiveBuf;
-	g_Usarts[usart].pRecBufE = g_Usarts[usart].receiveBuf;
-	g_Usarts[usart].pSendBufH = g_Usarts[usart].sendBuf;
-	g_Usarts[usart].pSendBufE = g_Usarts[usart].sendBuf;
+void Usart_BufInit(int usart, u8 *pReceiveBuf, u8 *pSendBuf, u16 len){
+	
+	g_Usarts[usart].pReceiveBuf=pReceiveBuf;
+	g_Usarts[usart].pSendBuf=pSendBuf;
+	g_Usarts[usart].len=len;
+	g_Usarts[usart].pRecBufH = g_Usarts[usart].pReceiveBuf;
+	g_Usarts[usart].pRecBufE = g_Usarts[usart].pReceiveBuf;
+	g_Usarts[usart].pSendBufH = g_Usarts[usart].pSendBuf;
+	g_Usarts[usart].pSendBufE = g_Usarts[usart].pSendBuf;
 	
 }
 
@@ -215,16 +234,14 @@ u16 Usart_SetData(int usart, u8 *pData, u16 size)
 	u16 r;
 	USART_TypeDef *u;
 	sutUSART *s;
-	if(usart == 0){
-		u=USART1;
-		//s=&g_Usart1;
-	}else if(usart ==1 ){
-		u=USART2;
-		//s=&g_Usart2;
-	}else if(usart ==2 ){
-		u=USART3;
-		//s=&g_Usart2;
-	}
+//	if(usart == 0){
+//		u=USART1;
+//	}else if(usart ==1 ){
+//		u=USART2;
+//	}else if(usart ==2 ){
+//		u=USART3;
+//	}
+	u=USARTS[usart];
 	s=&g_Usarts[usart];
 	
 #if USART_SUPPORT_MUX_TASK
@@ -262,33 +279,59 @@ u16 Usart_GetData(int usart, u8 *pData, u16 size)
 #endif
 	return r;
 }
+//#include "led.h"
+void _USART_IRQHandler(int index){
+	if((USARTS[index]->SR & (uint32_t)(1<<5)) && (USARTS[index]->CR1 & (uint32_t)(1<<5)))
+	{	
+		//LED=!LED;
+		*g_Usarts[index].pRecBufH = USARTS[index]->DR & (uint16_t)0x01FF;
+		++g_Usarts[index].pRecBufH;
+		if((g_Usarts[index].pRecBufH-g_Usarts[index].pReceiveBuf) >= g_Usarts[index].len)
+		{
+			g_Usarts[index].pRecBufH = g_Usarts[index].pReceiveBuf;
+		}
+	}	
+	
+	if((USARTS[index]->SR & (uint32_t)(1<<7)) && (USARTS[index]->CR1 & (uint32_t)(1<<7)))
+	{
+		//delay_us(10);
+		//USART_ClearITPendingBit(USART, USART_IT_TXE);
+		USARTS[index]->DR = *g_Usarts[index].pSendBufE;
+		g_Usarts[index].pSendBufE++;
+		if(g_Usarts[index].pSendBufE - g_Usarts[index].pSendBuf >= g_Usarts[index].len)g_Usarts[index].pSendBufE = g_Usarts[index].pSendBuf;
+		if(g_Usarts[index].pSendBufE == g_Usarts[index].pSendBufH)		//·￠?ííê3é
+		{
+			USARTS[index]->CR1 &= ~((uint32_t)(1<<7));
+		}
+	}	
+}
 
 void USART1_IRQHandler(void)                	//串口1中断服务程序
 {
 //	u8 Res;
 	OSIntEnter();
-
-	if((USART1->SR & (uint32_t)(1<<5)) && (USART1->CR1 & (uint32_t)(1<<5)))
-	{	
-		*g_Usarts[0].pRecBufH = USART1->DR & (uint16_t)0x01FF;
-		++g_Usarts[0].pRecBufH;
-		if((g_Usarts[0].pRecBufH-g_Usarts[0].receiveBuf) >= DATA_BUF_SIZE)
-		{
-			g_Usarts[0].pRecBufH = g_Usarts[0].receiveBuf;
-		}
-	}	
-	
-	if((USART1->SR & (uint32_t)(1<<7)) && (USART1->CR1 & (uint32_t)(1<<7)))
-	{
-		//USART_ClearITPendingBit(USART, USART_IT_TXE);
-		USART1->DR = *g_Usarts[0].pSendBufE;
-		g_Usarts[0].pSendBufE++;
-		if(g_Usarts[0].pSendBufE - g_Usarts[0].sendBuf >= DATA_BUF_SIZE)g_Usarts[0].pSendBufE = g_Usarts[0].sendBuf;
-		if(g_Usarts[0].pSendBufE == g_Usarts[0].pSendBufH)		//·￠?ííê3é
-		{
-			USART1->CR1 &= ~((uint32_t)(1<<7));
-		}
-	}	
+	_USART_IRQHandler(0);
+//	if((USART1->SR & (uint32_t)(1<<5)) && (USART1->CR1 & (uint32_t)(1<<5)))
+//	{	
+//		*g_Usarts[0].pRecBufH = USART1->DR & (uint16_t)0x01FF;
+//		++g_Usarts[0].pRecBufH;
+//		if((g_Usarts[0].pRecBufH-g_Usarts[0].pReceiveBuf) >= g_Usarts[0].len)
+//		{
+//			g_Usarts[0].pRecBufH = g_Usarts[0].pReceiveBuf;
+//		}
+//	}	
+//	
+//	if((USART1->SR & (uint32_t)(1<<7)) && (USART1->CR1 & (uint32_t)(1<<7)))
+//	{
+//		//USART_ClearITPendingBit(USART, USART_IT_TXE);
+//		USART1->DR = *g_Usarts[0].pSendBufE;
+//		g_Usarts[0].pSendBufE++;
+//		if(g_Usarts[0].pSendBufE - g_Usarts[0].pSendBuf >= g_Usarts[0].len)g_Usarts[0].pSendBufE = g_Usarts[0].pSendBuf;
+//		if(g_Usarts[0].pSendBufE == g_Usarts[0].pSendBufH)		//·￠?ííê3é
+//		{
+//			USART1->CR1 &= ~((uint32_t)(1<<7));
+//		}
+//	}	
 	
 	OSIntExit();			
 }
@@ -298,27 +341,28 @@ void USART2_IRQHandler(void)                	//串口1中断服务程序
 //	u8 Res;
 	OSIntEnter();
 
-	if((USART2->SR & (uint32_t)(1<<5)) && (USART2->CR1 & (uint32_t)(1<<5)))
-	{	
-		*g_Usarts[1].pRecBufH = USART2->DR & (uint16_t)0x01FF;
-		++g_Usarts[1].pRecBufH;
-		if((g_Usarts[1].pRecBufH-g_Usarts[1].receiveBuf) >= DATA_BUF_SIZE)
-		{
-			g_Usarts[1].pRecBufH = g_Usarts[1].receiveBuf;
-		}
-	}	
-	
-	if((USART2->SR & (uint32_t)(1<<7)) && (USART2->CR1 & (uint32_t)(1<<7)))
-	{
-		//USART_ClearITPendingBit(USART, USART_IT_TXE);
-		USART2->DR = *g_Usarts[1].pSendBufE;
-		g_Usarts[1].pSendBufE++;
-		if(g_Usarts[1].pSendBufE - g_Usarts[1].sendBuf >= DATA_BUF_SIZE)g_Usarts[1].pSendBufE = g_Usarts[1].sendBuf;
-		if(g_Usarts[1].pSendBufE == g_Usarts[1].pSendBufH)		//
-		{
-			USART2->CR1 &= ~((uint32_t)(1<<7));
-		}
-	}	
+	_USART_IRQHandler(1);
+//	if((USART2->SR & (uint32_t)(1<<5)) && (USART2->CR1 & (uint32_t)(1<<5)))
+//	{	
+//		*g_Usarts[1].pRecBufH = USART2->DR & (uint16_t)0x01FF;
+//		++g_Usarts[1].pRecBufH;
+//		if((g_Usarts[1].pRecBufH-g_Usarts[1].pReceiveBuf) >= g_Usarts[1].len)
+//		{
+//			g_Usarts[1].pRecBufH = g_Usarts[1].pReceiveBuf;
+//		}
+//	}	
+//	
+//	if((USART2->SR & (uint32_t)(1<<7)) && (USART2->CR1 & (uint32_t)(1<<7)))
+//	{
+//		//USART_ClearITPendingBit(USART, USART_IT_TXE);
+//		USART2->DR = *g_Usarts[1].pSendBufE;
+//		g_Usarts[1].pSendBufE++;
+//		if(g_Usarts[1].pSendBufE - g_Usarts[1].pSendBuf >= g_Usarts[1].len)g_Usarts[1].pSendBufE = g_Usarts[1].pSendBuf;
+//		if(g_Usarts[1].pSendBufE == g_Usarts[1].pSendBufH)		//
+//		{
+//			USART2->CR1 &= ~((uint32_t)(1<<7));
+//		}
+//	}	
 	
 	OSIntExit();			
 }
@@ -328,30 +372,40 @@ void USART3_IRQHandler(void)                	//串口1中断服务程序
 //	u8 Res;
 	OSIntEnter();
 
-	if((USART3->SR & (uint32_t)(1<<5)) && (USART3->CR1 & (uint32_t)(1<<5)))
-	{	
-		*g_Usarts[2].pRecBufH = USART3->DR & (uint16_t)0x01FF;
-		++g_Usarts[2].pRecBufH;
-		if((g_Usarts[2].pRecBufH-g_Usarts[2].receiveBuf) >= DATA_BUF_SIZE)
-		{
-			g_Usarts[2].pRecBufH = g_Usarts[2].receiveBuf;
-		}
-	}	
-	
-	if((USART3->SR & (uint32_t)(1<<7)) && (USART3->CR1 & (uint32_t)(1<<7)))
-	{
-		//USART_ClearITPendingBit(USART, USART_IT_TXE);
-		USART3->DR = *g_Usarts[2].pSendBufE;
-		g_Usarts[2].pSendBufE++;
-		if(g_Usarts[2].pSendBufE - g_Usarts[2].sendBuf >= DATA_BUF_SIZE)g_Usarts[2].pSendBufE = g_Usarts[2].sendBuf;
-		if(g_Usarts[2].pSendBufE == g_Usarts[2].pSendBufH)		//
-		{
-			USART3->CR1 &= ~((uint32_t)(1<<7));
-		}
-	}	
+	_USART_IRQHandler(2);
+//	if((USART3->SR & (uint32_t)(1<<5)) && (USART3->CR1 & (uint32_t)(1<<5)))
+//	{	
+//		*g_Usarts[2].pRecBufH = USART3->DR & (uint16_t)0x01FF;
+//		++g_Usarts[2].pRecBufH;
+//		if((g_Usarts[2].pRecBufH-g_Usarts[2].pReceiveBuf) >= g_Usarts[2].len)
+//		{
+//			g_Usarts[2].pRecBufH = g_Usarts[2].pReceiveBuf;
+//		}
+//	}	
+//	
+//	if((USART3->SR & (uint32_t)(1<<7)) && (USART3->CR1 & (uint32_t)(1<<7)))
+//	{
+//		//USART_ClearITPendingBit(USART, USART_IT_TXE);
+//		USART3->DR = *g_Usarts[2].pSendBufE;
+//		g_Usarts[2].pSendBufE++;
+//		if(g_Usarts[2].pSendBufE - g_Usarts[2].pSendBuf >= g_Usarts[2].len)g_Usarts[2].pSendBufE = g_Usarts[2].pSendBuf;
+//		if(g_Usarts[2].pSendBufE == g_Usarts[2].pSendBufH)		//
+//		{
+//			USART3->CR1 &= ~((uint32_t)(1<<7));
+//		}
+//	}	
 	
 	OSIntExit();			
 }
 
+void UART4_IRQHandler(void)                	//串口1中断服务程序
+{
+//	u8 Res;
+	OSIntEnter();
+//LED=!LED;
+	_USART_IRQHandler(3);
+	
+	OSIntExit();			
+}
 /************************ (C) COPYRIGHT 黑帮老大 *****END OF FILE***************/
 

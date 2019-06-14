@@ -59,13 +59,13 @@ static uint8_t at_cmdLine[at_cmdLenMax];
 
 void at_printf(const char * s)
 {
-	Usart_SetData(AT_USART,(u8*)s,strlen(s));
+	Usart_SetData(0,(u8*)s,strlen(s));
 }
 
 /** @defgroup AT_PORT_Functions
   * @{
   */
-static void at_procTask(void);
+static void at_procTask();
 
 /**
   * @brief  Uart receive task.
@@ -74,17 +74,14 @@ static void at_procTask(void);
   */
   
 
-void at_recvTask()
+void at_recvTask(u8 *recvBuf,u16 recvLen)
 {
 	static uint8_t atHead[2];
 	static uint8_t *pCmdLine;
 	int i=0;
 	uint8_t temp;
-	
-	u16 recvLen;
-	u8 recvBuf[at_cmdLenMax];
 
-	recvLen = Usart_GetData(AT_USART,recvBuf,128);
+	//recvLen = Usart_GetData(0,recvBuf,128);
 	
 	while(i<recvLen){
 		if(at_state != at_statIpTraning)
@@ -92,7 +89,7 @@ void at_recvTask()
 			temp = recvBuf[i];
 			if((temp != '\n') && (echoFlag))
 			{
-				Usart_SetData(AT_USART,&recvBuf[i],1);
+				Usart_SetData(0,&recvBuf[i],1);
 			}
 		}
 		i++;
@@ -123,7 +120,7 @@ void at_recvTask()
 					if(echoFlag)
 					{
 						//Usart_SetData(0,(u8*)"3",1);
-					  Usart_SetData(AT_USART,(u8*)"\r\n",strlen("\r\n")); ///////////
+					  Usart_SetData(0,(u8*)"\r\n",strlen("\r\n")); ///////////
 					  at_printf("\r\n");
 					}
 					

@@ -381,9 +381,11 @@ static void  DrawBitLine16BPP(int x, int y, U16 const GUI_UNI_PTR * p, int xsize
 *   that no check on the parameters needs to be performed.
 */
 void LCD_L0_SetPixelIndex(int x, int y, int ColorIndex) {
-    LCD_SetCursor(x,y);//设置光标位置 
-	LCD_WR_REG(R34);//开始写入GRAM
-	LCD_WR_DATA(ColorIndex);
+//    LCD_SetCursor(x,y);//设置光标位置 
+//	LCD_WR_REG(R34);//开始写入GRAM
+//	LCD_WR_DATA(ColorIndex);
+	
+	LCD_DrawPoint(x,y,ColorIndex);
 }
 
 /*********************************************************************
@@ -529,7 +531,7 @@ void LCD_Off (void) {
 *   Initialises the LCD-controller.
 */
 int  LCD_L0_Init(void) {
-  ILI93xx_Init();
+  //LCD_Init_ILI93();
   return 0;
 }
 

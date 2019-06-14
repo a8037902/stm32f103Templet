@@ -27,8 +27,4 @@ void at_setupCmdIpr(uint8_t id, char *pPara);
 
 void at_setupCmdGslp(uint8_t id, char *pPara);
 
-void at_testCmdDebug(uint8_t id);
-void at_queryCmdDebug(uint8_t id);
-void at_setupCmdDebug(uint8_t id, char *pPara);
-
 #endif

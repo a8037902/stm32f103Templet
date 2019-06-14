@@ -318,8 +318,9 @@ ARM Macro Assembler    Page 5
               00000000 
 Command Line: --debug --xref --cpu=Cortex-M3 --apcs=interwork --depend=..\outpu
 t\os_cpu_a.d -o..\output\os_cpu_a.o -IC:\Keil_v5\ARM\RV31\INC -IC:\Keil_v5\ARM\
-PACK\ARM\CMSIS\3.20.4\CMSIS\Include -IC:\Keil_v5\ARM\Inc\ST\STM32F10x --list=..
-\listing\os_cpu_a.lst ..\..\UCOSII\PORT\os_cpu_a.asm
+PACK\ARM\CMSIS\3.20.4\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\1.
+0.2\Device\Include --list=..\listing\os_cpu_a.lst ..\..\UCOSII\PORT\os_cpu_a.as
+m
 
 
 

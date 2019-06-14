@@ -50,7 +50,7 @@
 #endif
 
 #if SYSTEM_SUPPORT_UCGUI
-	#include "GUI.H"
+	//#include "GUI.H"
 #endif
 	
 typedef struct _MessageHead {
@@ -134,28 +134,27 @@ void     NVIC_SETPRIMASK   (void);
 void     NVIC_RESETPRIMASK (void);
 void     NVIC_SETBASEMASK  (uint32_t basePri);
 uint32_t NVIC_GETBASEMASK  (void);
-void     NVIC_Configuration(void);
+//void     NVIC_Configuration(void);
 
-void delay_init(void);
-void delay_ms(u16 nms);
-void delay_us(u32 nus);
+void Delay_Init(void);
+void Delay_Ms(u16 nms);
+void Delay_Us(u32 nus);
 
-void Usart_Init(int usart, u32 bound);
-void Usart_BufInit(int usart);
+void Usart_Init(int usart, u32 bound, u8 *pReceiveBuf, u8 *pSendBuf, u16 len);
+void Usart_BufInit(int usart, u8 *pReceiveBuf, u8 *pSendBuf, u16 len);
 u16 Usart_SetData(int usart, u8 *pData, u16 size);
 u16 Usart_GetData(int usart, u8 *pData, u16 size);
 
 void Debug_Printf(u16 level, const char *s,...);
-u32 Sys_Init(u32 baudRate0,u32 baudRate1,u32 baudRate2);
-BOOL Sys_Discryption(u8 *key);
+u32 SYS_Init(void);
 
 #if SYSTEM_SUPPORT_UCOS==1
-void Sys_Start(void);
-void * MemGet(u16 size, u8 * perr);
-u8 MemPut(void * pblk);
-u8 send_Message(u8 task, u16 message, u16 para0, u16 para1, u8 * pData, u16 len);
-Message_sut * receive_Message(u8 task);
-u8 free_Message(Message_sut* pMessage);
+void SYS_Start(void);
+void * MEM_Get(u16 size, u8 * perr);
+u8 MEM_Put(void * pblk);
+u8 MSG_Send(u8 task, u16 message, u16 para0, u16 para1, u8 * pData, u16 len);
+Message_sut * MSG_Receive(u8 task);
+u8 MSG_Free(Message_sut* pMessage);
 #endif
 
 /* External variables --------------------------------------------------------*/

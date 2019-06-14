@@ -22,17 +22,27 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f10x_it.h" 
+#include "stm32f10x_it.h"
+//#include "hw_config.h"
+//#include "usb_lib.h"
+//#include "usb_istr.h"
 
+#include "sys.h"
 
  
 void NMI_Handler(void)
 {
+	#if MY_DEBUG==1
+	Usart_SetData(0,(u8*)"NMI_H\r\n",strlen("NMI_H\r\n"));
+	#endif
 }
  
 void HardFault_Handler(void)
 {
   /* Go to infinite loop when Hard Fault exception occurs */
+	#if MY_DEBUG==1
+	Usart_SetData(0,(u8*)"HardFault_H\r\n",strlen("HardFault_H\r\n"));
+	#endif
   while (1)
   {
   }
@@ -41,6 +51,9 @@ void HardFault_Handler(void)
 void MemManage_Handler(void)
 {
   /* Go to infinite loop when Memory Manage exception occurs */
+	#if MY_DEBUG==1
+	Usart_SetData(0,(u8*)"MemManage_H\r\n",strlen("MemManage_H\r\n"));
+	#endif
   while (1)
   {
   }
@@ -50,6 +63,9 @@ void MemManage_Handler(void)
 void BusFault_Handler(void)
 {
   /* Go to infinite loop when Bus Fault exception occurs */
+	#if MY_DEBUG==1
+	Usart_SetData(0,(u8*)"BusFault_H\r\n",strlen("BusFault_H\r\n"));
+	#endif
   while (1)
   {
   }
@@ -58,6 +74,9 @@ void BusFault_Handler(void)
 void UsageFault_Handler(void)
 {
   /* Go to infinite loop when Usage Fault exception occurs */
+	#if MY_DEBUG==1
+	Usart_SetData(0,(u8*)"UsageFault_H\r\n",strlen("UsageFault_H\r\n"));
+	#endif
   while (1)
   {
   }
@@ -65,11 +84,61 @@ void UsageFault_Handler(void)
  
 void SVC_Handler(void)
 {
+	#if MY_DEBUG==1
+	Usart_SetData(0,(u8*)"SVC_H\r\n",strlen("SVC_H\r\n"));
+	#endif
 }
  
 void DebugMon_Handler(void)
 {
+	#if MY_DEBUG==1
+	Usart_SetData(0,(u8*)"DebugMon_H\r\n",strlen("DebugMon_H\r\n"));
+	#endif
 }
+
+/*******************************************************************************
+* Function Name  : USB_IRQHandler
+* Description    : This function handles USB Low Priority interrupts
+*                  requests.
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+#if defined(STM32L1XX_MD) || defined(STM32L1XX_HD)|| defined(STM32L1XX_MD_PLUS)|| defined (STM32F37X)
+void USB_LP_IRQHandler(void)
+#else
+void USB_LP_CAN1_RX0_IRQHandler(void)
+#endif
+{
+	//OSIntEnter();		    //Ω¯»Î÷–∂œ
+	#if MY_DEBUG==1
+	Usart_SetData(0,(u8*)"USB_LP\r\n",strlen("USB_LP\r\n"));
+	#endif
+	//USB_Istr();
+	//OSIntExit(); 
+}
+
+/*******************************************************************************
+* Function Name  : USB_FS_WKUP_IRQHandler
+* Description    : This function handles USB WakeUp interrupt request.
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+/*
+#if defined(STM32L1XX_MD) || defined(STM32L1XX_HD)|| defined(STM32L1XX_MD_PLUS)
+void USB_FS_WKUP_IRQHandler(void)
+#else
+void USBWakeUp_IRQHandler(void)
+#endif
+{
+	//OSIntEnter();
+	#if MY_DEBUG==1
+	Usart_SetData(0,(u8*)"USBW\r\n",strlen("USBW\r\n"));
+	#endif
+	//EXTI_ClearITPendingBit(EXTI_Line18);
+	//OSIntExit(); 
+}*/
 /* 
 void PendSV_Handler(void)
 {

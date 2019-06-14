@@ -34,11 +34,9 @@ at_funcationType at_fun[at_cmdNum]={
 	{"+GMR", 4, NULL, NULL, NULL, at_exeCmdGmr},
 	{"+GSLP", 5, NULL, NULL, at_setupCmdGslp, NULL},
 	{"+IPR", 4, NULL, NULL, at_setupCmdIpr, NULL},
-	{"+DEBUG", 6, at_testCmdDebug, at_queryCmdDebug, at_setupCmdDebug, NULL},
 	
 	//devicecmd
-
-	
+	{"+DEBUG", 6, at_testCmdDebug, at_queryCmdDebug, at_setupCmdDebug, NULL},
 };
 
 #endif

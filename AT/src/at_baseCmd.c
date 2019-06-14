@@ -15,6 +15,8 @@
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <stdlib.h>
+
 #include "at.h"
 #include "at_baseCmd.h"
 #include "at_version.h"
@@ -81,16 +83,10 @@ void at_exeCmdGmr(uint8_t id)
 {
   char temp[64];
   
-  sprintf(temp,"FIRMWARE:%d.%d.%d.%d\r\n", HARDWARE_VERSOIN_NUM,INDUSTR_VERSOIN_NUM,MAIN_SOFTWARE_VERSOIN_NUM,SOFTWARE_VERSOIN_NUM);
-  at_printf(temp);
-	
-	sprintf(temp, "DATE:%d.%d.%d\r\n",DATE_YEAR,DATE_MONTH,DATE_DAY);
+  sprintf(temp,"FIRMWARE:1.1.1.1\r\n");
   at_printf(temp);
 
-  sprintf(temp, "AT:%s\r\n",AT_VERSION);
-  at_printf(temp);
-	
-	
+
 //  sprintf(temp, "GPRS:%s\r\n",APN_NAME);
 //  at_printf(temp);
   at_backOk;
@@ -113,43 +109,11 @@ void at_setupCmdIpr(uint8_t id, char *pPara)
 
 void at_setupCmdGslp(uint8_t id, char *pPara)
 {
-//	uint32_t n;
-//	pPara++;
-//	
-//	n = atoi(pPara);
+	uint32_t n;
+	pPara++;
+	
+	n = atoi(pPara);
 	at_backOk;
-}
-
-extern u16 DebugLevel;
-extern at_funcationType at_fun[];
-
-
-
-void at_testCmdDebug(uint8_t id)
-{
-	char temp[32];
-	sprintf(temp, "%s:(0-100)\r\n", at_fun[id].at_cmdName);
-	at_printf(temp);
-	at_backOk;
-}
-void at_queryCmdDebug(uint8_t id)
-{
-	char temp[32];
-	sprintf(temp, "%s:%d\r\n", at_fun[id].at_cmdName,DebugLevel);
-	at_printf(temp);
-	at_backOk;
-}
-
-void at_setupCmdDebug(uint8_t id, char *pPara)
-{
-	int data;
-	sscanf(pPara,"=%d",&data);
-	if(data<=100){
-		DebugLevel=data;
-		at_backOk;
-	}else{
-		at_backError;
-	}
 }
 /**
   * @}

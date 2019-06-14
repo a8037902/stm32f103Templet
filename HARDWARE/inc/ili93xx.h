@@ -1,19 +1,19 @@
-#ifndef __ILI93xx_H
-#define __ILI93xx_H		
+#ifndef __ILI93XX_H
+#define __ILI93XX_H		
 #include "sys.h"	 
 #include "stdlib.h"
 //////////////////////////////////////////////////////////////////////////////////	 
 //本程序只供学习使用，未经作者许可，不得用于其它任何用途
-//Mini STM32开发板
+//ALIENTEK战舰STM32开发板
 //2.4/2.8寸TFT液晶驱动	  
-//支持驱动IC型号包括:ILI9325/RM68021/ILI9320/ILI9328/LGDP4531/LGDP4535/SPFD5408/SSD1289/1505/B505等
+//支持驱动IC型号包括:ILI9341/ILI9325/RM68021/ILI9320/ILI9328/LGDP4531/LGDP4535/SPFD5408/SSD1289/1505/B505/C505等	    
 //正点原子@ALIENTEK
 //技术论坛:www.openedv.com
-//创建日期:2011/1/13
-//版本：V1.7
+//修改日期:2012/9/11
+//版本：V1.9
 //版权所有，盗版必究。
-//Copyright(C) 正点原子 2009-2019
-//All rights reserved
+//Copyright(C) 广州市星翼电子科技有限公司 2009-2019
+//All rights reserved	
 //********************************************************************************
 //V1.2修改说明
 //支持了SPFD5408的驱动,另外把液晶ID直接打印成HEX格式.方便查看LCD驱动IC.
@@ -29,61 +29,66 @@
 //2,修改了快速IO及横竖屏的设置方式.
 //V1.6 20111116
 //1,加入对LGDP4535液晶的驱动支持
-//V1.7 20120719
-//1,新增单独的9325驱动.不再与9328共用驱动.
+//V1.7 20120713
+//1,增加LCD_RD_DATA函数
+//2,增加对ILI9341的支持
+//3,增加ILI9325的独立驱动代码
+//4,增加LCD_Scan_Dir函数(慎重使用)	  
+//6,另外修改了部分原来的函数,以适应9341的操作
+//V1.8 20120905
+//1,加入LCD重要参数设置结构体lcddev
+//2,加入LCD_Display_Dir函数,支持在线横竖屏切换
+//V1.9 20120911
+//1,新增RM68042驱动（ID:6804），但是6804不支持横屏显示！！原因：改变扫描方式，
+//导致6804坐标设置失效，试过很多方法都不行，暂时无解。
 //////////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////用户配置区///////////////////////////////////	 
-//以下2个宏定义，定义屏幕的显示方式及IO速度
-#define USE_HORIZONTAL  0	//定义是否使用横屏 		0,不使用.1,使用.
-#define LCD_FAST_IO     1 	//定义是否使用快速IO	0,不实用.1,使用
-//////////////////////////////////////////////////////////////////////////////////	 
-
-
  
-//TFTLCD部分外要调用的函数		   
+  
+//LCD重要参数集
+typedef struct  
+{										    
+	u16 width;			//LCD 宽度
+	u16 height;			//LCD 高度
+	u16 id;				//LCD ID
+	u8  dir;			//横屏还是竖屏控制：0，竖屏；1，横屏。	
+	u8	wramcmd;		//开始写gram指令
+	u8  setxcmd;		//设置x坐标指令
+	u8  setycmd;		//设置y坐标指令	 
+}_lcd_dev; 	  
+
+//LCD参数
+extern _lcd_dev lcddev;	//管理LCD重要参数
+//LCD的画笔颜色和背景色	   
 extern u16  POINT_COLOR;//默认红色    
 extern u16  BACK_COLOR; //背景颜色.默认为白色
-//定义LCD的尺寸
-#if USE_HORIZONTAL==1	//使用横屏
-#define ILI93xx_W 320
-#define ILI93xx_H 240
-#else
-#define ILI93xx_W 240
-#define ILI93xx_H 320
-#endif
-////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////////	 
 //-----------------LCD端口定义---------------- 
-#define	LCD_LED PCout(10) //LCD背光    		 PC10 
-//如果使用快速IO，则定义下句，如果不使用，则去掉即可！
-//使用快速IO，刷屏速率可以达到28帧每秒！
-//普通IO，只能14帧每秒！   
+#define	LCD_LED PBout(0) //LCD背光    		 PB0 	    
+//LCD地址结构体
+typedef struct
+{
+	u16 LCD_REG;
+	u16 LCD_RAM;
+} LCD_TypeDef;
+//使用NOR/SRAM的 Bank1.sector4,地址位HADDR[27,26]=11 A10作为数据命令区分线 
 
-#if LCD_FAST_IO==1 //快速IO
+//////////////////////////////////////////////////////////////////////////////////
+	 
+//扫描方向定义
+#define L2R_U2D  0 //从左到右,从上到下
+#define L2R_D2U  1 //从左到右,从下到上
+#define R2L_U2D  2 //从右到左,从上到下
+#define R2L_D2U  3 //从右到左,从下到上
 
-#define	LCD_CS_SET  GPIOC->BSRR=1<<9    //片选端口  	     PC9
-#define	LCD_RS_SET	GPIOC->BSRR=1<<8    //数据/命令          PC8	   
-#define	LCD_WR_SET	GPIOC->BSRR=1<<7    //写数据			 PC7
-#define	LCD_RD_SET	GPIOC->BSRR=1<<6    //读数据			 PC6
-								    
-#define	LCD_CS_CLR  GPIOC->BRR=1<<9     //片选端口  	     PC9
-#define	LCD_RS_CLR	GPIOC->BRR=1<<8     //数据/命令          PC8	   
-#define	LCD_WR_CLR	GPIOC->BRR=1<<7     //写数据			 PC7
-#define	LCD_RD_CLR	GPIOC->BRR=1<<6     //读数据			 PC6
-								    
-#else //慢速IO
+#define U2D_L2R  4 //从上到下,从左到右
+#define U2D_R2L  5 //从上到下,从右到左
+#define D2U_L2R  6 //从下到上,从左到右
+#define D2U_R2L  7 //从下到上,从右到左	 
 
-#define	LCD_CS	PCout(9)  //片选端口  	     PC9
-#define	LCD_RS	PCout(8)  //数据/命令        PC8	   
-#define	LCD_WR	PCout(7)  //写数据			 PC7
-#define	LCD_RD	PCout(6)  //读数据			 PC6
-								    
-#endif
-//PB0~15,作为数据线
-#define DATAOUT(x) GPIOB->ODR=x; //数据输出
-#define DATAIN     GPIOB->IDR;   //数据输入
-//////////////////////////////////////////////////////////////////////
+#define DFT_SCAN_DIR  L2R_U2D  //默认的扫描方向
+
 //画笔颜色
 #define WHITE         	 0xFFFF
 #define BLACK         	 0x0000	  
@@ -113,52 +118,31 @@ extern u16  BACK_COLOR; //背景颜色.默认为白色
 #define LGRAYBLUE        0XA651 //浅灰蓝色(中间层颜色)
 #define LBBLUE           0X2B12 //浅棕蓝色(选择条目的反色)
 	    															  
-extern u16 BACK_COLOR, POINT_COLOR ;  
-void LCD_WR_REG(u8 data);
-void ILI93xx_Init(void);
-void LCD_DisplayOn(void);
-void LCD_DisplayOff(void);
-void LCD_Clear(u16 Color);	 
-void LCD_SetCursor(u16 Xpos, u16 Ypos);
-void LCD_DrawPoint(u16 x,u16 y);//画点
-u16  LCD_ReadPoint(u16 x,u16 y); //读点
-void Draw_Circle(u16 x0,u16 y0,u8 r);
-void LCD_DrawLine(u16 x1, u16 y1, u16 x2, u16 y2);
-void LCD_DrawRectangle(u16 x1, u16 y1, u16 x2, u16 y2);		   
-void LCD_Fill(u16 xsta,u16 ysta,u16 xend,u16 yend,u16 color);
-void LCD_ShowChar(u16 x,u16 y,u8 num,u8 size,u8 mode);//显示一个字符
-void LCD_ShowNum(u16 x,u16 y,u32 num,u8 len,u8 size);  //显示一个数字
-void LCD_Show2Num(u16 x,u16 y,u16 num,u8 len,u8 size,u8 mode);//显示2个数字
-void LCD_ShowString(u16 x,u16 y,const u8 *p);		 //显示一个字符串,16字体
-									    
+void LCD_Init_ILI93(void);													   	//初始化
+void LCD_DisplayOn(void);													//开显示
+void LCD_DisplayOff(void);													//关显示
+void LCD_Clear(u16 Color);	 												//清屏
+void LCD_SetCursor(u16 Xpos, u16 Ypos);										//设置光标
+void LCD_DrawPoint(u16 x,u16 y,int color);											//画点
+void LCD_Fast_DrawPoint(u16 x,u16 y,u16 color);								//快速画点
+u16  LCD_ReadPoint(u16 x,u16 y); 											//读点 
+void Draw_Circle(u16 x0,u16 y0,u8 r);										//画圆
+void LCD_DrawLine(u16 x1, u16 y1, u16 x2, u16 y2);							//画线
+void LCD_DrawRectangle(u16 x1, u16 y1, u16 x2, u16 y2);		   				//画矩形
+void LCD_Fill(u16 sx,u16 sy,u16 ex,u16 ey,u16 color);		   				//填充单色
+void LCD_Color_Fill(u16 sx,u16 sy,u16 ex,u16 ey,u16 *color);				//填充指定颜色
+void LCD_ShowChar(u16 x,u16 y,u8 num,u8 size,u8 mode);						//显示一个字符
+void LCD_ShowNum(u16 x,u16 y,u32 num,u8 len,u8 size);  						//显示一个数字
+void LCD_ShowxNum(u16 x,u16 y,u32 num,u8 len,u8 size,u8 mode);				//显示 数字
+void LCD_ShowString(u16 x,u16 y,u16 width,u16 height,u8 size,u8 *p);		//显示一个字符串,12/16字体
+
 void LCD_WriteReg(u8 LCD_Reg, u16 LCD_RegValue);
 u16 LCD_ReadReg(u8 LCD_Reg);
 void LCD_WriteRAM_Prepare(void);
-void LCD_WriteRAM(u16 RGB_Code);
-u16 LCD_ReadRAM(void);		   
-u16 LCD_BGR2RGB(u16 c);
-
-//写8位数据函数
-//用宏定义,提高速度.
-#if LCD_FAST_IO==1 //快速IO
-#define LCD_WR_DATA(data){\
-LCD_RS_SET;\
-LCD_CS_CLR;\
-DATAOUT(data);\
-LCD_WR_CLR;\
-LCD_WR_SET;\
-LCD_CS_SET;\
-} 
-#else//正常IO
-#define LCD_WR_DATA(data){\
-LCD_RS=1;\
-LCD_CS=0;\
-DATAOUT(data);\
-LCD_WR=0;\
-LCD_WR=1;\
-LCD_CS=1;\
-} 	
-#endif																				 
+void LCD_WriteRAM(u16 RGB_Code);		  
+void LCD_Scan_Dir(u8 dir);							//设置屏扫描方向
+void LCD_Display_Dir(u8 dir);						//设置屏幕显示方向
+ 					   																			 
 //9320/9325 LCD寄存器  
 #define R0             0x00
 #define R1             0x01

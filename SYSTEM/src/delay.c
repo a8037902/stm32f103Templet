@@ -43,7 +43,7 @@ void SysTick_Handler(void)
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-void delay_init()
+void Delay_Init()
 {
 	//SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK_Div8);	//选择外部时钟  HCLK/8  
 	
@@ -75,7 +75,7 @@ void delay_init()
 * Output         : None.
 * Return         : None.
 *******************************************************************************/	
-void delay_us(u32 nus)
+void Delay_Us(u32 nus)
 {		
 #if SYSTEM_SUPPORT_UCOS==0
 	u32 temp;	    	 
@@ -121,7 +121,7 @@ void delay_us(u32 nus)
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-void delay_ms(u16 nms)
+void Delay_Ms(u16 nms)
 {	
 #if SYSTEM_SUPPORT_UCOS==0
 	u32 temp;		   
@@ -144,7 +144,7 @@ void delay_ms(u16 nms)
 		}
 		nms%=fac_ms;			              //ucos已经无法提供这么小的延时了,采用普通方式延时    
 	}
-	delay_us((u32)(nms*1000));	      //普通方式延时 
+	Delay_Us((u32)(nms*1000));	      //普通方式延时 
 #endif
 }
 
