@@ -77,7 +77,7 @@ u16 DebugLevel=MY_DEBUG;
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-
+static char pBuf[256];
 void Debug_Printf(u16 level, const char *s,...)
 {
 #if MY_DEBUG>0
@@ -87,7 +87,7 @@ void Debug_Printf(u16 level, const char *s,...)
 	char * pBuf=0;
 	
 	u16 l;
-	pBuf = MEM_Get(MEM_BIG_SIZE,&err);
+	//pBuf = MEM_Get(MEM_BIG_SIZE,&err);
 	OS_ENTER_CRITICAL();
 	l = DebugLevel;
 	OS_EXIT_CRITICAL();
@@ -97,7 +97,7 @@ void Debug_Printf(u16 level, const char *s,...)
 		va_end( argp );
 		Usart_SetData(0,buf,strlen(pBuf));
 	}
-	MEM_Put(MEM_Get);
+	//MEM_Put(MEM_Get);
 #endif
 
 }
