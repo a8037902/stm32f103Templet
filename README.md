@@ -2,6 +2,42 @@
 
 ## 功能模块介绍
 
+### 任务线程
+不同任务调用模块的不同处理过程，并自行接收，释放消息。
+```c
+void TaskOne(void *pdata)
+{
+	Message_sut * pMessage=0;
+	u32 lastOSTime=0;
+	u32 nextOSTime=0;
+	while(1)
+	{	
+		nextOSTime=OSTime;
+		Module_Process(1,Tool_LoopSub(lastOSTime,OSTime));
+		lastOSTime=nextOSTime;
+		do{
+			pMessage= MSG_Receive(1);
+			if(pMessage){
+				Module_MsgHandle(1,pMessage);
+				switch(pMessage->head.message){
+					default:
+						break;
+				}
+
+				//OSMemPut(Mem, (void *) pMessage);
+				MSG_Free(pMessage);
+
+			}
+		}while(pMessage);
+		
+		OSTimeDly(10);	
+		//LED = !LED;
+		//OSTimeDlyHMSM(0,0,0,800);	
+	}
+}
+```
+
+
 ### 模块
 业务代码在放在Module文件夹下，模块之间可以根据业务需要将业务分离在不同的线程中。通过消息传递数据。
 module.c文件根据需要填写模块的处理函数或注销。
